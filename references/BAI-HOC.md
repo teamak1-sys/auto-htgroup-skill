@@ -1,0 +1,20 @@
+# BÀI HỌC — nhật ký lỗi của /auto-htgroup
+
+Đọc tệp này **trước mỗi lần chạy** (bước 0). Gặp lỗi mới thì **nối một dòng** vào
+bảng dưới (bước 8). Không ghi lại lỗi đã có. Mục đích: lần sau không mắc lại lỗi
+đã gặp, giống cách skill-creator lặp lại để cải thiện.
+
+| Ngày | Hiện tượng | Nguyên nhân | Cách tránh |
+| --- | --- | --- | --- |
+| 2026-11-17 | Khung chat hỏi loạn sau bước dàn nhân vật (hỏi lại thời lượng, hiểu «4» thành «4 phần») | bảng bước hết dấu mốc thì thả mô hình tự do, và lịch sử bị cắt còn 12 tin | dùng đúng 5 câu phỏng vấn + bảng dữ kiện; không để mô hình tự hỏi thêm |
+| 2026-11-17 | Giám sát kẹt 83 phút «còn cú chưa xong» | dùng lại `command_id` của cú cho `generation.refresh` | mỗi lần hỏi trạng thái phải đổi `command_id` mới |
+| 2026-11-17 | 2 cú bị đánh fail «không tìm thấy ffprobe» | backend chạy thiếu `/opt/homebrew/bin` trong PATH | khởi động backend với PATH có ffprobe |
+| 2026-11-17 | `timeline.assemble` báo «node nguồn chưa có media» | thẻ gen rác không media | xoá thẻ rác bằng `canvas.node.delete` rồi chạy lại |
+| 2026-11-17 | `modal app stop` rồi gọi địa chỉ bị 404 mãi | stop xong phải deploy lại mới sống | muốn bật máy thì chạy `modal deploy`, đừng chỉ gọi URL |
+| 2026-11-17 | Ảnh vẽ ra cả tờ storyboard có viền chữ | câu mô tả chứa chữ «storyboard» | không ghi «storyboard»; thêm «không chữ, không viền, không ô chú thích» |
+| 2026-11-18 | `first_shot.py` kẹt «running» 25 phút dù ComfyUI đã xong video thật (task DB vẫn `running`) | script dùng mã lệnh CỐ ĐỊNH `{submit}-refresh` cho MỌI lần `generation.refresh`; lần sau bị `COMMAND_CONFLICT`/trả kết quả cũ | mỗi lần hỏi trạng thái phải đổi mã lệnh mới (nối số thứ tự/uuid); kiểm: gọi refresh mã mới trả «success» ngay |
+| 2026-11-18 | `POST /scripts/generate` không cắm mô hình chữ sinh kịch bản kiểu quảng cáo TikTok («Dừng lại 3 giây…»), 0 cú | bộ chia mẫu 9 phần là cho video ngắn thương mại, không phải phim tự sự | phim tự sự thì soạn brief JSON (ý tưởng → cảnh → cú) theo `examples/brief_mau.json` rồi chạy film_run; đừng dùng `/scripts/generate` |
+| 2026-11-18 | film_run chạy lại báo «UPSTREAM: HTTP 404 …/prompt: modal-http: invalid function call» ở ngay cú 1.1 | máy Modal tự tắt sau `scaledown_window=600` (10 phút rảnh); gọi URL **không** đánh thức lại, phải deploy | trước khi chạy film_run: `curl "$URL/system_stats"`; 404 thì `MODAL_CONFIG_PATH="$PWD/.tmp/modal.toml" .tmp/modal-venv/bin/modal deploy docs/thu-modal-a100/app.py` (~3,5 giây) rồi chờ `system_stats` 200 |
+| 2026-11-18 | film_run `--max-shots 20` xong sau 94 giây, báo «đã sinh 20 cú» nhưng 19/20 thẻ gen `status=done` mà `media_ref` trống, `generation_status=queued`; ComfyUI vẫn đang sinh từng cú | bước `generation.refresh` trong kỹ năng sinh cú chỉ được gọi 1 lần, trả «queued» (không lỗi) là bị coi xong — trên máy giả (sinh nhanh) không lộ, trên GPU thật (2 phút/cú) thì lộ | KHÔNG tin film_run báo «done» khi chưa kiểm: đếm `media_ref` thật trên thẻ gen; nếu còn `queued` thì chờ ComfyUI xong rồi hỏi lại `generation.refresh` từng `task_id` (mã lệnh mới mỗi lần) để gắn media — đã có script `/tmp/poll-20-shots.py` làm việc này |
+| 2026-11-18 | Phim 20 cú ghép ra **rời rạc**: mỗi cú một khuôn mặt/bộ đồ/con phố khác, cú 1.5 vẽ ra bác sĩ áo trắng dù prompt là «bàn tay nhặt lọ thuốc» | **bỏ qua bước 3**: không sinh ảnh nhân vật/bối cảnh/đạo cụ/storyboard, nên cả 20 lệnh là `text_to_video` với `inputs: []`; bảng vẽ chỉ có 1 thẻ tài sản (Lena) và thẻ đó không có ảnh, Milo không có thẻ nào | chạy **cổng kiểm ảnh** `scripts/kiem-anh.py --canvas-id <mã> --brief <brief>` trước bước sinh video; nó in «CHẶN» + danh sách thẻ thiếu ảnh, mã thoát 1 thì **không** được chạy video |
+| 2026-11-18 | Skill bỏ bước, storyboard tạo trước thẻ cảnh, có thể gọi film_run dù ảnh chưa gắn hoặc task chưa xong | thứ tự cũ không có sổ checkpoint; kiểm ảnh cũ chỉ đọc metadata và không so số cú/dây | workflow.py lưu từng trạng thái, kiểm brief/manifest/node/tệp + khóa phê duyệt GPU; cấm submit trực tiếp và kiểm ffprobe từng cú |
