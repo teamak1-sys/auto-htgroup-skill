@@ -11,18 +11,18 @@ Không đọc, không sửa mã sản phẩm.
 Máy Mac/Linux:
 
 ```bash
-git clone https://github.com/teamak1-sys/auto-htgroup-skill.git "$HOME/.agents/skills/auto-htgroup"
+git clone https://github.com/teamak1-sys/auto-htgroup-skill.git "<chỗ bộ nạp kỹ năng đọc>"
 ```
 
 Máy Windows (PowerShell):
 
 ```powershell
-git clone https://github.com/teamak1-sys/auto-htgroup-skill.git "$HOME\.agents\skills\auto-htgroup"
+git clone https://github.com/teamak1-sys/auto-htgroup-skill.git "<chỗ bộ nạp kỹ năng đọc>"
 ```
 
 Repo **riêng**, phải đăng nhập GitHub trước (`gh auth login` hoặc SSH key).
 
-Cập nhật: `git -C ~/.agents/skills/auto-htgroup pull --ff-only`
+Cập nhật: `git -C "<chỗ gói kỹ năng>" pull --ff-only`
 
 ## Trong này có gì
 
@@ -48,5 +48,5 @@ python3 scripts/kiem-anh.py --selftest   # 7 bài
 ## Không chứa
 
 Không có mã sản phẩm, không có khoá API, không có dữ liệu phim, không có địa chỉ
-máy GPU thật. Tệp trạng thái phim nằm trong dự án (`<dự án>/.tmp/auto-htgroup/<run>/`),
+máy GPU thật. Sổ trạng thái phim nằm trong dự án, do công cụ giữ,
 không nằm trong repo này.

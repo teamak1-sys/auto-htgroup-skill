@@ -47,6 +47,41 @@ Máy chủ tự soạn câu mô tả khi dùng «sinh ảnh tự động»; tự
 (chủ thể · diện mạo · tư thế · môi trường · góc máy · ánh sáng · phong cách),
 **không viết chữ «storyboard»**, luôn thêm «không chữ, không viền, không ô chú thích».
 
+### Ảnh tham chiếu nhân vật gốc — chỉ một lần cho mỗi nhân vật
+
+Thẻ nhân vật (người hoặc sinh vật đóng vai người) đi đường riêng: lần tạo ảnh **đầu
+tiên** là **bảng tham chiếu nhân vật gốc**, khổ 16:9 — bên trái một chân dung lớn
+thấy rõ mặt, bên phải **ba hình thân không đầu** (trước · nghiêng 90° · sau) để khoá
+trang phục. Máy chủ tự dựng câu này từ tên + mô tả trong Character Bible; không cần
+agent viết.
+
+- Sinh **một lần** rồi khoá theo nhân vật. Chạy lại cú máy **không** sinh lại bảng này.
+- **Không** dùng câu không đầu cho storyboard, cho khung đầu/cuối, hay cho video: ba
+  chỗ đó phải có đầu, mặt, tóc đầy đủ theo hành động và góc máy của cú.
+- Storyboard dùng bảng gốc làm **ảnh tham chiếu nhận dạng** (mặt, tóc, phục trang),
+  rồi vẽ lại nhân vật có đầu đầy đủ.
+- Ảnh nhân vật xuất hiện trong cảnh (do agent tự viết) không bị đổi theo mẫu này.
+
+Mẫu câu (bản máy chủ dùng, giữ nguyên tiếng Anh):
+
+```text
+Create an ultra-photorealistic 16:9 cinematic character master reference sheet using the
+character description below and, when provided, the available identity reference image.
+CHARACTER BIBLE: <tên + mô tả nhân vật>
+LEFT 40% — ONE LARGE PORTRAIT: head-and-shoulders, complete clearly visible face, skin
+pores, eyes, hair, expression, scars, tattoos, all distinctive identity features.
+RIGHT 60% — THREE HEADLESS BODY VIEWS of the EXACT SAME CHARACTER: front, exact 90-degree
+side, exact 180-degree back; all three with NO HEADS AT ALL; start cleanly at the upper
+collar/neckline; no wounds, blood or severed anatomy; identical height, proportions,
+outfit, materials, accessories, footwear; complete bodies down to the shoes.
+STYLE: ultra-photorealistic studio photography, realistic anatomy and fabric, sharp focus,
+soft studio light, seamless light-gray background.
+STRICT: no heads on the three body views, no blurring, no pixelation, no censor bars, no
+alternative costumes, no extra limbs, no text, no labels, no cartoon or illustration.
+FINAL: one large clear-face portrait on the left plus exactly three headless full-body
+costume views on the right.
+```
+
 ## Ba tuyến ảnh trên máy chủ 8001 (không tốn GPU thuê)
 
 | Việc | Gọi | Tham số chính |

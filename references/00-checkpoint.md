@@ -1,19 +1,17 @@
 # Sổ chạy HT-Group — hướng dẫn dùng checkpoint
 
 Đọc khi bắt đầu hoặc tiếp tục run. Không phải tài liệu thay thế SKILL.md.
-Mọi lệnh chạy trên máy điều khiển (không phải server GPU); thư mục dự án lấy theo HT_PROJECT_ROOT hoặc ~/TAN-CONG-TOP-VIEW. Dùng Python 3.10+.
+Mọi lệnh chạy trên máy điều khiển (không phải server GPU). Chỗ dự án để công cụ tự dò; chỉ đặt biến `HT_PROJECT_ROOT` khi máy có nhiều dự án. Dùng Python 3.10+.
 
 ## 1. Thiết lập biến mỗi lượt
 
 ```bash
-SKILL="$HOME/.agents/skills/auto-htgroup"
+SKILL="<chỗ gói kỹ năng>"            # do bộ nạp kỹ năng cấp
 RUN="<ma-run-da-chon>"
-export HT_ROOT="${HT_PROJECT_ROOT:-$HOME/TAN-CONG-TOP-VIEW}"
-test -d "$HT_ROOT/backend" || { echo "THIẾU DỰ ÁN: đặt HT_PROJECT_ROOT vào thư mục dự án"; exit 1; }
-DIR="$HT_ROOT/.tmp/auto-htgroup/$RUN"
 W="$SKILL/scripts/workflow.py"
-python3 "$W" status --run "$RUN"
+python3 "$W" status --run "$RUN"     # công cụ tự dò chỗ dự án và chỗ sổ chạy
 ```
+Không thấy dự án: công cụ báo lỗi kèm cách chỉ; đặt `HT_PROJECT_ROOT` rồi chạy lại. Không tự dạo đĩa, không tự tạo chỗ rỗng. Sổ chạy của run do công cụ giữ; không tự mở, không tự sửa.
 Nếu là phim mới: `python3 "$W" init --run "$RUN"`. Nếu tiếp tục, không init.
 state.json được script ghi nguyên tử. Không tạo/sửa bằng tay, không xóa để đi tắt.
 Ghi mã run sau mỗi lượt để lần sau không mất tiến độ.
@@ -79,7 +77,7 @@ Tên tài sản phải duy nhất và khớp tiêu đề thẻ (có thể có ph
 
 Dùng MCP tools/list để lấy schema thật: canvas_list, canvas_create, canvas_state_get, canvas_node_create_asset, canvas_node_create_scene, canvas_node_details. Cảnh trỏ đúng tài sản qua reference_node_ids (create-only, không thể patch); scene_number là số thứ tự toàn phim 1,2,3... (khác ID 1.1,1.2,2.1 dùng trong manifest). Mỗi cú có thẻ cảnh riêng, không chỉ thẻ cảnh lớn. Gắn ảnh vào chính node bằng autofill. Không tạo ảnh rời rồi tính đã đủ.
 
-Mỗi lô ảnh dùng POST http://127.0.0.1:8001/api/v1/images/autofill (scope assets hoặc storyboards, limit 12, node_ids nếu cần sửa, overwrite=true chỉ khi thực sự thay ảnh). Cặp tài sản trước, storyboard sau. Đọc kết quả generated/failed/skipped; nếu failed không nộp video. Đến hết danh sách, kiểm lại ảnh; script kiểm media_ref/storyboard_media_ref, object_key, tệp trong storage và ffprobe. Kho mặc định backend/storage, nếu backend có kho khác phải cung cấp biến HT_STORAGE_DIR trỏ đúng kho (chỉ đường dẫn; không mở .env). Không tạo file giả trong kho để qua cổng.
+Mỗi lô ảnh dùng POST http://127.0.0.1:8001/api/v1/images/autofill (scope assets hoặc storyboards, limit 12, node_ids nếu cần sửa, overwrite=true chỉ khi thực sự thay ảnh). Cặp tài sản trước, storyboard sau. Đọc kết quả generated/failed/skipped; nếu failed không nộp video. Đến hết danh sách, kiểm lại ảnh; script kiểm media_ref/storyboard_media_ref, object_key và tệp trong kho media của dự án bằng ffprobe. Kho media do máy chủ khai; khác chỗ mặc định thì đặt biến `HT_STORAGE_DIR` trỏ đúng kho (không mở tệp cấu hình bí mật). Không tạo file giả trong kho để qua cổng.
 
 ```bash
 python3 "$SKILL/scripts/kiem-anh.py" --canvas-id "$CANVAS" --brief "$DIR/brief.json"
@@ -130,7 +128,7 @@ timeline_get để lấy etag; timeline_append tối đa 50 clip mỗi lô, lấ
 
 ```bash
 python3 "$W" export --run "$RUN"
-python3 "$W" finish --run "$RUN" --file "$HOME/Downloads/ten-phim.mp4"
+python3 "$W" finish --run "$RUN" --file "<chỗ bàn giao>/ten-phim.mp4"
 ```
 finish chỉ tải output thật của task đã ghi; nếu queued/running gọi lại finish, không xuất lại. Không ghi đè tệp sẵn; chọn tên mới. Kiểm lại trong trình phát. Ghi bài học rồi advance để đến done.
 
