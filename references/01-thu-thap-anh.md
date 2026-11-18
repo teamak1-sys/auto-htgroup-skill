@@ -62,7 +62,7 @@ agent viết.
   rồi vẽ lại nhân vật có đầu đầy đủ.
 - Ảnh nhân vật xuất hiện trong cảnh (do agent tự viết) không bị đổi theo mẫu này.
 
-Mẫu câu (bản máy chủ dùng, giữ nguyên tiếng Anh):
+Mẫu câu (bản **rút gọn** cho dễ đọc; máy chủ giữ bản đầy đủ trong mã. Agent **không tự viết** câu này — chỉ gọi `autofill`, máy chủ tự dựng. Chép tay bản dưới thì ảnh sẽ khác bản chuẩn, đừng làm):
 
 ```text
 Create an ultra-photorealistic 16:9 cinematic character master reference sheet using the
