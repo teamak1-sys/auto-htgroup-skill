@@ -20,7 +20,7 @@ Máy Windows (PowerShell):
 git clone https://github.com/teamak1-sys/auto-htgroup-skill.git "<chỗ bộ nạp kỹ năng đọc>"
 ```
 
-Repo **riêng**, phải đăng nhập GitHub trước (`gh auth login` hoặc SSH key).
+Repo **công khai**: kéo được ngay, không cần đăng nhập. Muốn đẩy lên thì vẫn cần tài khoản có quyền.
 
 Cập nhật: `git -C "<chỗ gói kỹ năng>" pull --ff-only`
 

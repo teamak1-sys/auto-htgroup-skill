@@ -31,8 +31,8 @@ Skill không giả định chỗ đặt nào trên máy. Chỗ dự án để c�
 
 Bản cài skill **là bản sao repo riêng** `teamak1-sys/auto-htgroup-skill`.
 
-- Địa chỉ gói: `https://github.com/teamak1-sys/auto-htgroup-skill.git` (repo **riêng**).
-- Máy mới: `git clone https://github.com/teamak1-sys/auto-htgroup-skill.git "<chỗ bộ nạp kỹ năng đọc>"`. Repo riêng nên máy đó phải đăng nhập GitHub trước (hoặc nhận tệp nén của gói, không cần mạng). Không xin người dùng dán token vào chat.
+- Địa chỉ gói: `https://github.com/teamak1-sys/auto-htgroup-skill.git` (repo **công khai**, kéo không cần đăng nhập).
+- Máy mới: `git clone https://github.com/teamak1-sys/auto-htgroup-skill.git "<chỗ bộ nạp kỹ năng đọc>"`. Không có mạng thì nhận tệp nén của gói. Không xin người dùng dán token vào chat.
 - Cập nhật: `git -C "<chỗ gói kỹ năng>" pull --ff-only`.
 - Máy lạc hậu bản: thiếu lệnh hoặc sai cú pháp thì hỏi chủ dự án cho cập nhật, không tự chắp vá.
 - Sửa skill thì sửa trong repo rồi commit/push, không mỗi máy một kiểu.
