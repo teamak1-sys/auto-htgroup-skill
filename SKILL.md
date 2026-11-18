@@ -29,7 +29,13 @@ Skill không giả định chỗ đặt nào trên máy. Chỗ dự án để c�
 - Kéo từ repo: `git clone https://github.com/teamak1-sys/TAN-CONG-TOP-VIEW.git`. Repo **riêng**: cần đăng nhập GitHub trước, chỉ người dùng tự đăng nhập; không xin họ dán token vào chat, không đoán chỗ.
 - Không tự dạo đĩa để đoán chỗ đặt dự án. Công cụ tự báo lỗi kèm cách chỉ chỗ.
 
-Bản cài skill **là bản sao repo riêng** `teamak1-sys/auto-htgroup-skill`. Cập nhật trước khi chạy: `git -C <chỗ gói kỹ năng> pull --ff-only`. Máy khác: clone đúng repo đó vào chỗ bộ nạp kỹ năng đọc. Sửa skill thì sửa trong repo rồi commit/push, không mỗi máy một kiểu.
+Bản cài skill **là bản sao repo riêng** `teamak1-sys/auto-htgroup-skill`.
+
+- Địa chỉ gói: `https://github.com/teamak1-sys/auto-htgroup-skill.git` (repo **riêng**).
+- Máy mới: `git clone https://github.com/teamak1-sys/auto-htgroup-skill.git "<chỗ bộ nạp kỹ năng đọc>"`. Repo riêng nên máy đó phải đăng nhập GitHub trước (hoặc nhận tệp nén của gói, không cần mạng). Không xin người dùng dán token vào chat.
+- Cập nhật: `git -C "<chỗ gói kỹ năng>" pull --ff-only`.
+- Máy lạc hậu bản: thiếu lệnh hoặc sai cú pháp thì hỏi chủ dự án cho cập nhật, không tự chắp vá.
+- Sửa skill thì sửa trong repo rồi commit/push, không mỗi máy một kiểu.
 
 Đọc references/00-checkpoint.md để biết cách dùng sổ trạng thái, định dạng manifest, payload và các lệnh. Gọi công cụ của gói kỹ năng (chỗ gói do bộ nạp cấp, ký hiệu `$SKILL`):
 
