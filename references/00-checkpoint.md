@@ -3,6 +3,8 @@
 Đọc khi bắt đầu hoặc tiếp tục run. Không phải tài liệu thay thế SKILL.md.
 Mọi lệnh chạy trên máy điều khiển (không phải server GPU). Chỗ dự án để công cụ tự dò; chỉ đặt biến `HT_PROJECT_ROOT` khi máy có nhiều dự án. Dùng Python 3.10+.
 
+**Máy không có dự án** vẫn chạy được: đặt `HT_BACKEND_URL` trỏ máy chủ dữ liệu (mặc định `http://127.0.0.1:8001`), tuỳ chọn `HT_GUI_URL`, `HT_RUNS_DIR`. Sổ chạy khi đó nằm cạnh gói kỹ năng; ảnh/clip được tải về tạm để đo; máy này chỉ cần Python + `ffprobe` + mạng tới 8001.
+
 ## 1. Thiết lập biến mỗi lượt
 
 ```bash

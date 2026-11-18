@@ -52,6 +52,22 @@ python3 "$SKILL/scripts/workflow.py" status --run "$RUN"
 - Mở cổng trên Windows theo tài liệu Windows của dự án (mục 3–6): máy chủ dữ liệu 8001 và giao diện 3001, bằng PowerShell; **không** dùng lệnh của máy Mac.
 - Máy Windows chưa cài: làm đúng mục 3 tài liệu đó (Python 3.11, ffmpeg, kéo dự án, tạo môi trường Python, cài gói phụ thuộc, đặt biến ffmpeg/ffprobe) rồi mới chạy skill. Tài liệu Windows **chưa chạy thử trên máy Windows thật** — nói rõ mức đó khi báo cáo.
 
+### Máy KHÔNG có dự án — vẫn điều khiển được
+
+Máy khác chỉ cần **mạng tới máy chủ dữ liệu**, không cần bản sao dự án:
+
+```bash
+export HT_BACKEND_URL="http://<máy-chạy-dự-án>:8001"   # bắt buộc khi khác máy
+export HT_GUI_URL="http://<máy-chạy-dự-án>:3001"       # tuỳ chọn, để kiểm giao diện
+export HT_REMOTE=1                                      # tự bật khi máy không có mã dự án
+```
+
+- Công cụ tự bật chế độ này khi không thấy dự án: sổ chạy để cạnh gói kỹ năng (đổi bằng `HT_RUNS_DIR`), **không** đụng đĩa của dự án.
+- Đọc/ghi bảng vẽ, nộp cú, xuất phim đều qua máy chủ; ảnh và clip tải về tạm để đo, không cần kho media trên máy này.
+- Máy này cần: Python 3.10+, `ffprobe` để đo clip, và quyền vào cổng 8001. Không cần GPU, không cần ComfyUI.
+- Kịch bản, brief, manifest do agent viết ngay trên máy này (trong sổ chạy); máy chủ chỉ nhận lệnh và giữ dữ liệu phim.
+- Đích giao phim: bất kỳ chỗ nào ghi được (không bắt buộc Downloads); vẫn phải là `.mp4` mới.
+
 ## 3. Luồng bắt buộc — không đảo thứ tự
 
 Bước 0 luôn là mục 2: để công cụ xác định chỗ dự án; chưa có dự án thì dừng hỏi cách lấy, không chạy tiếp.

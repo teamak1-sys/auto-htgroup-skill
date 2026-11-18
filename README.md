@@ -38,6 +38,19 @@ Cập nhật: `git -C "<chỗ gói kỹ năng>" pull --ff-only`
 | `scripts/kiem-anh.py` | cổng kiểm ảnh thật trước khi cho qua bước sinh video |
 | `evals/` | ba ca thử cho AI (thiếu storyboard, clip kẹt queued, bỏ phỏng vấn) |
 
+## Dùng ở máy không có dự án
+
+Chỉ cần mạng tới máy chủ dữ liệu của dự án:
+
+```bash
+export HT_BACKEND_URL="http://<máy-chạy-dự-án>:8001"
+export HT_GUI_URL="http://<máy-chạy-dự-án>:3001"   # tuỳ chọn
+```
+
+Công cụ tự nhận chế độ này (không thấy mã dự án). Sổ chạy để cạnh gói kỹ năng,
+ảnh/clip tải về tạm để đo. Máy này cần Python 3.10+, `ffprobe`, không cần GPU,
+không cần bản sao dự án.
+
 ## Kiểm sau khi sửa
 
 ```bash

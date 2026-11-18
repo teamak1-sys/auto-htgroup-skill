@@ -40,6 +40,13 @@ def _resolve_root() -> P:
 ROOT = _resolve_root()
 SKILL = P(__file__).resolve().parents[1]
 BASE = os.environ.get("HT_BACKEND_URL", "http://127.0.0.1:8001").rstrip("/")
+GUI = os.environ.get("HT_GUI_URL", "").strip().rstrip("/")
+#: Chạy từ máy KHÔNG có dự án: chỉ cần mạng tới máy chủ dữ liệu. Bật bằng
+#: `HT_REMOTE=1`, hoặc tự bật khi máy này không có mã dự án.
+REMOTE = os.environ.get("HT_REMOTE", "").strip().lower() in ("1", "true", "yes") or not (ROOT / "backend").is_dir()
+#: Sổ chạy để cạnh gói kỹ năng khi ở máy không có dự án; có dự án thì để trong
+#: dự án như trước. Đổi bằng `HT_RUNS_DIR`.
+RUNS = P(os.environ.get("HT_RUNS_DIR") or (SKILL / ".runs" if REMOTE else ROOT / ".tmp/auto-htgroup")).expanduser()
 STAGES = ["lessons","health","interview","plan","assets","scenes","storyboards","approval","video","export","lessons_end","done"]
 QUESTIONS = ["theme","title","duration_minutes","language","characters"]
 def need(ok, msg):
@@ -61,13 +68,18 @@ def rpc(name,args):
     need(not result.get("isError") and result.get("content"),"MCP không trả kết quả hợp lệ")
     return json.loads(result["content"][0]["text"])
 def health():
-    need(
-        (ROOT/"backend").is_dir(),
-        f"thiếu dự án: không thấy {ROOT}/backend. Đặt HT_PROJECT_ROOT=<thư mục dự án> "
-        "rồi chạy lại, hoặc clone repo về đúng ~/TAN-CONG-TOP-VIEW",
-    )
+    if not REMOTE:
+        need(
+            (ROOT/"backend").is_dir(),
+            f"thiếu dự án: không thấy {ROOT}/backend. Đặt HT_PROJECT_ROOT=<thư mục dự án> "
+            "rồi chạy lại, hoặc clone repo về chỗ mặc định",
+        )
     with urllib.request.urlopen(BASE+"/health",timeout=8) as r: need(json.load(r).get("ok") is True,"backend không khỏe")
-    with urllib.request.urlopen("http://127.0.0.1:3001/",timeout=8) as r: need(r.status==200,"giao diện không khỏe")
+    # Máy không có dự án: chỉ kiểm giao diện khi operator chỉ địa chỉ, không đoán.
+    if GUI:
+        with urllib.request.urlopen(GUI+"/",timeout=8) as r: need(r.status==200,"giao diện không khỏe")
+    elif not REMOTE:
+        with urllib.request.urlopen("http://127.0.0.1:3001/",timeout=8) as r: need(r.status==200,"giao diện không khỏe")
 def name(s):
     return re.split(r"\s+[—–-]\s+",str(s),maxsplit=1)[0].strip().casefold()
 def plan(folder,s):
@@ -110,8 +122,26 @@ def node_details(canvas):
         for n in rows: out[n["node_id"]]=n
     need(set(ids)==set(out),"thiếu chi tiết node")
     return out
+_CACHE = {}
+def _files_url(key):
+    return BASE + "/v1/files/" + urllib.parse.quote(str(key).lstrip("/"), safe="/")
+def _remote_file(key):
+    """Tải tệp trong kho về máy này để đo bằng ffprobe (máy không có dự án)."""
+    if key in _CACHE and _CACHE[key].is_file():
+        return _CACHE[key]
+    dst = P(tempfile.mkdtemp(prefix="ht-media-")) / P(str(key)).name
+    try:
+        with urllib.request.urlopen(_files_url(key), timeout=120) as r, dst.open("wb") as f:
+            shutil.copyfileobj(r, f)
+    except Exception as exc:
+        raise ValueError(f"media không tải được từ máy chủ: {exc}") from None
+    need(dst.is_file() and dst.stat().st_size > 0, "media không có tệp thật trên máy chủ")
+    _CACHE[key] = dst
+    return dst
 def media_path(ref):
     need(isinstance(ref,dict) and ref.get("object_key"),"media thiếu object_key")
+    if REMOTE:
+        return _remote_file(ref["object_key"])
     root=P(os.environ.get("HT_STORAGE_DIR") or ROOT/"backend/storage").expanduser().resolve()
     p=(root/ref["object_key"]).resolve()
     need(p.is_relative_to(root) and p.is_file() and p.stat().st_size>0,"media không có tệp thật trong kho")
@@ -129,6 +159,12 @@ def image(n):
     p=n["props"]; ref=p.get("storyboard_media_ref") if n["type"]=="scene" else None
     ref=ref or p.get("media_ref")
     need(isinstance(ref,dict) and ref.get("media_type")=="image",f"thẻ {n['node_id']} thiếu ảnh")
+    if REMOTE:
+        # Máy không có dự án: kiểm ảnh có thật bằng HTTP HEAD, khỏi tải cả phim ảnh.
+        req=urllib.request.Request(_files_url(ref["object_key"]),method="HEAD")
+        with urllib.request.urlopen(req,timeout=30) as r:
+            need(r.status==200 and int(r.headers.get("Content-Length") or 0)>0,"media không có tệp thật trên máy chủ")
+            return [ref["object_key"],int(r.headers.get("Content-Length")),0]
     path=media_path(ref); probe(path)
     return [ref["object_key"],path.stat().st_size,path.stat().st_mtime_ns]
 def gate(folder,s,level):
@@ -239,12 +275,13 @@ def main():
     if args.action=="selftest": return selftest()
     need(args.run,"thiếu --run, dùng cùng mã suốt phim")
     need(re.fullmatch(r"[a-zA-Z0-9_-]{1,80}",args.run),"mã run không hợp lệ")
-    need(
-        ROOT.is_dir(),
-        f"thiếu thư mục dự án {ROOT}: đặt HT_PROJECT_ROOT=<thư mục dự án> rồi chạy lại "
-        "(không tự tạo thư mục rỗng)",
-    )
-    folder=ROOT/".tmp/auto-htgroup"/args.run; path=folder/"state.json"
+    if not REMOTE:
+        need(
+            ROOT.is_dir(),
+            f"thiếu thư mục dự án {ROOT}: đặt HT_PROJECT_ROOT=<thư mục dự án> rồi chạy lại "
+            "(không tự tạo thư mục rỗng)",
+        )
+    folder=RUNS/args.run; path=folder/"state.json"
     if args.action=="init":
         need(not path.exists(),"run đã có; dùng status để tiếp tục")
         save(path,{"stage":"lessons","history":[],"answers":{},"tasks":{},"clips":{}})
@@ -344,7 +381,7 @@ def main():
         url=urllib.parse.urljoin(BASE,r.get("download_url") or r["output_url"])
         parsed=urllib.parse.urlsplit(url)
         local=None
-        if parsed.scheme=="file":
+        if parsed.scheme=="file" and not REMOTE:
             local=P(urllib.request.url2pathname(parsed.path)).resolve()
             roots=[(ROOT/"backend/storage").resolve()]
             if os.environ.get("HT_EXPORT_DIR"): roots.append(P(os.environ["HT_EXPORT_DIR"]).expanduser().resolve())
@@ -352,7 +389,10 @@ def main():
             need(parsed.netloc in ("","localhost") and local.suffix.lower()==".mp4" and local.is_file() and any(local.is_relative_to(x) for x in roots),"tệp xuất ngoài kho đã xác minh")
         else:
             need(parsed.scheme=="http" and parsed.netloc==urllib.parse.urlsplit(BASE).netloc,"URL xuất không thuộc backend 8001")
-        need(p.is_relative_to((P.home()/"Downloads").resolve()) and p.suffix.lower()==".mp4","đích phải là file mp4 trong Downloads")
+        if REMOTE:
+            need(p.suffix.lower()==".mp4","đích phải là tệp mp4")
+        else:
+            need(p.is_relative_to((P.home()/"Downloads").resolve()) and p.suffix.lower()==".mp4","đích phải là file mp4 trong Downloads")
         need(p.parent.is_dir(),"thư mục đích chưa tồn tại")
         need(not p.exists(),"tệp đích đã tồn tại; dùng tên mới")
         fd,tmp=tempfile.mkstemp(dir=p.parent,suffix=".mp4")
@@ -362,7 +402,7 @@ def main():
             probe(tmp,True); os.replace(tmp,p)
         finally:
             if os.path.exists(tmp): os.unlink(tmp)
-        need(p.is_relative_to((P.home()/"Downloads").resolve()) and p.is_file() and p.stat().st_size>0,"tệp phim chưa nằm trong Downloads")
+        need(p.is_file() and p.stat().st_size>0,"tệp phim chưa tải xong")
         d=probe(p,True); seconds=float(d["format"]["duration"]); b,_=plan(folder,s)
         need(abs(seconds-float(b["duration_seconds"]))<=2,"thời lượng phim lệch quá 2 giây; cắt/sửa rồi đo lại")
         s["delivery"]={"path":str(p),"seconds":seconds,"bytes":p.stat().st_size}; move(s,"lessons_end")
